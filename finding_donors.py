@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 from time import time
 import os
-
+import category_encoders as ce
+import pdb
 data = pd.read_csv(os.getcwd() + "/census.csv")
 
 # Success - Display the first record
@@ -49,9 +50,8 @@ print(features_log_minmax_transform.head(n = 5))
 features_final = pd.get_dummies(features_log_minmax_transform)
 print(features_final)
 
-income = pd.get_dummies(income_raw)
-print(income)
-
+income = income_raw.apply(lambda col: col == '<=50K')
+income = pd.DataFrame(income)
 encoded = list(features_final.columns)
 print("{} total features after one-hot encoding.".format(len(encoded)))
 
@@ -107,7 +107,7 @@ from sklearn.metrics import accuracy_score, fbeta_score
 
 def train_predict(learner, sample_size, X_train, y_train, X_test, y_test): 
 
-    PREDICTION_FIT = 300
+    PREDICTION_LIMIT = 300
     '''
     inputs:
        - learner: the learning algorithm to be trained and predicted on
@@ -122,6 +122,7 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
     
     # TODO: Fit the learner to the training data using slicing with 'sample_size' using .fit(training_features[:], training_labels[:])
     train_start = time() # Get start time
+    print(y_train.columns)
     learner.fit(X_train[:sample_size], y_train[:sample_size])
     train_end = time() # Get end time
     
@@ -131,24 +132,24 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
     # TODO: Get the predictions on the test set(X_test),
     #       then get predictions on the first 300 training samples(X_train) using .predict()
     pred_start = time() # Get start time
-    predictions_test = learner.predict(X_test[:PREDICTION_FIT])
-    predictions_train = learner.predict(X_train[:PREDICTION_FIT])
+    predictions_test = learner.predict(X_test[:PREDICTION_LIMIT])
+    predictions_train = learner.predict(X_train[:PREDICTION_LIMIT])
     pred_end = time() # Get end time
     
     # TODO: Calculate the total prediction time
     results['pred_time'] = int(pred_end - pred_start)
             
     # TODO: Compute accuracy on the first 300 training samples which is y_train[:300]
-    results['acc_train'] = accuracy_score(y_train[:PREDICTION_FIT], predictions_train[:PREDICTION_FIT])
+    results['acc_train'] = accuracy_score(y_train[:PREDICTION_LIMIT], predictions_train[:PREDICTION_LIMIT])
     # TODO: Compute accuracy on test set using accuracy_score()
 
-    results['acc_test'] = accuracy_score(y_test[:PREDICTION_FIT], predictions_test[:PREDICTION_FIT])
+    results['acc_test'] = accuracy_score(y_test[:PREDICTION_LIMIT], predictions_test[:PREDICTION_LIMIT])
     
     # TODO: Compute F-score on the the first 300 training samples using fbeta_score()
-    results['f_train'] = fbeta_score(y_train[:PREDICTION_FIT], predictions_train[:PREDICTION_FIT], average='weighted', beta=0.5)
+    results['f_train'] = fbeta_score(y_train[:PREDICTION_LIMIT], predictions_train[:PREDICTION_LIMIT], average='weighted', beta=0.3)
         
     # TODO: Compute F-score on the test set which is y_test
-    results['f_test'] = fbeta_score(y_test[:PREDICTION_FIT], predictions_test[:PREDICTION_FIT], average='weighted', beta=0.5)
+    results['f_test'] = fbeta_score(y_test[:PREDICTION_LIMIT], predictions_test[:PREDICTION_LIMIT], average='weighted', beta=0.3)
        
     # Success
     print("{} trained on {} samples.".format(learner.__class__.__name__, sample_size))
@@ -159,14 +160,13 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
 
 # TODO: Import the three supervised learning models from sklearn
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 # TODO: Initialize the three models
 clf_A = DecisionTreeClassifier()
 
 clf_B = RandomForestClassifier()
 
-clf_C = None
+clf_C = AdaBoostClassifier()
 
 samples_100 = len(y_train)
 samples_10 = int(samples_100 / 10)
@@ -175,7 +175,7 @@ samples_1 = int(samples_10 / 10)
 # Collect results on the learners
 results = {}
 # add in rest once sorted
-for clf in [clf_A, clf_B]:
+for clf in [clf_A, clf_B, clf_C]:
     clf_name = clf.__class__.__name__
     print(clf_name)
     results[clf_name] = {}

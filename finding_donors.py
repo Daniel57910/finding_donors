@@ -50,8 +50,10 @@ print(features_log_minmax_transform.head(n = 5))
 features_final = pd.get_dummies(features_log_minmax_transform)
 print(features_final)
 
+# binary encoding used for income
 income = income_raw.apply(lambda col: col == '<=50K')
 income = pd.DataFrame(income)
+
 encoded = list(features_final.columns)
 print("{} total features after one-hot encoding.".format(len(encoded)))
 

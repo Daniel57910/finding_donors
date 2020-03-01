@@ -122,7 +122,7 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
     
     # TODO: Fit the learner to the training data using slicing with 'sample_size' using .fit(training_features[:], training_labels[:])
     train_start = time() # Get start time
-    learner.fit(X_train, y_train)
+    learner.fit(X_train[:sample_size], y_train[:sample_size])
     train_end = time() # Get end time
     
     # TODO: Calculate the training time
@@ -131,24 +131,24 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
     # TODO: Get the predictions on the test set(X_test),
     #       then get predictions on the first 300 training samples(X_train) using .predict()
     pred_start = time() # Get start time
-    predictions_test = learner.predict(X_test)
-    predictions_train = learner.predict(X_train)
+    predictions_test = learner.predict(X_test[:PREDICTION_FIT])
+    predictions_train = learner.predict(X_train[:PREDICTION_FIT])
     pred_end = time() # Get end time
     
     # TODO: Calculate the total prediction time
     results['pred_time'] = int(pred_end - pred_start)
             
     # TODO: Compute accuracy on the first 300 training samples which is y_train[:300]
-    results['acc_train'] = accuracy_score(y_train, predictions_train)
+    results['acc_train'] = accuracy_score(y_train[:PREDICTION_FIT], predictions_train[:PREDICTION_FIT])
     # TODO: Compute accuracy on test set using accuracy_score()
 
-    results['acc_test'] = accuracy_score(y_test, predictions_test)
+    results['acc_test'] = accuracy_score(y_test[:PREDICTION_FIT], predictions_test[:PREDICTION_FIT])
     
     # TODO: Compute F-score on the the first 300 training samples using fbeta_score()
-    results['f_train'] = fbeta_score(y_train, predictions_train, average='weighted', beta=0.5)
+    results['f_train'] = fbeta_score(y_train[:PREDICTION_FIT], predictions_train[:PREDICTION_FIT], average='weighted', beta=0.5)
         
     # TODO: Compute F-score on the test set which is y_test
-    results['f_test'] = fbeta_score(y_test, predictions_test, average='weighted', beta=0.5)
+    results['f_test'] = fbeta_score(y_test[:PREDICTION_FIT], predictions_test[:PREDICTION_FIT], average='weighted', beta=0.5)
        
     # Success
     print("{} trained on {} samples.".format(learner.__class__.__name__, sample_size))
